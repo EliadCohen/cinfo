@@ -5,14 +5,14 @@ Making CI/CD triaging little bit easier
 ## Configuration
 
 ```
-input:
+sources:
   prod_jenkins:
     type: jenkins
     url: https://some.jenkins.com
     jobs:
       - jobX
       - jobY
-output:
+targets:
   some_spreadsheet:
     type: google_spreadsheet
     url: https://docs.google.com/spreadsheets/d/some.spreadsheet

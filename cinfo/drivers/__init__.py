@@ -11,23 +11,3 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import crayons
-import logging
-import yaml
-
-LOG = logging.getLogger(__name__)
-
-
-class Config(object):
-
-    global_config_file = '/etc/cinfo/cinfo.yaml'
-
-    def __init__(self, file=global_config_file):
-        self.file = file
-
-    def load(self):
-        LOG.info("{}: {}".format(
-            crayons.yellow("loading conf"), self.file))
-        with open(self.file, 'r') as stream:
-            self.data = yaml.safe_load(stream)
-        return self.data

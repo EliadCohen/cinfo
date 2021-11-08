@@ -34,3 +34,12 @@ Usage Examples:
            crayons.yellow('cinfo pull'),
            crayons.yellow("cinfo publish"))
     return message
+
+
+def multiple_sources():
+    """Returns multiple sources exception."""
+    message = """
+There is more than one source defined...can't decide which one to use.
+Please specify a single source with {}
+""".format(crayons.red("--source NAME"))
+    return message

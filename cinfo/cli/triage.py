@@ -27,6 +27,8 @@ def add_triage_parser(subparsers):
                             default=os.path.join(os.path.expanduser("~"),
                                                  '.cinfo/cinfo.yaml'),
                             help='the path of cinfo configuration')
+    run_parser.add_argument('--source', dest="source",
+                            help='name of the source to use')
 
 
 def main(args):
@@ -34,5 +36,6 @@ def main(args):
     # TODO(abregman): do actually something with debug
     del args.debug
     del args.func
-    triager = Triager(config_file=args.config_file)
+    triager = Triager(config_file=args.config_file,
+                      source=args.source)
     triager.run()
