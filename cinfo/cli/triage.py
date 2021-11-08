@@ -29,6 +29,8 @@ def add_triage_parser(subparsers):
                             help='the path of cinfo configuration')
     run_parser.add_argument('--source', dest="source",
                             help='name of the source to use')
+    run_parser.add_argument('--target', dest="target",
+                            help='name of the target to use')
 
 
 def main(args):
@@ -37,5 +39,6 @@ def main(args):
     del args.debug
     del args.func
     triager = Triager(config_file=args.config_file,
-                      source=args.source)
+                      source_name=args.source,
+                      target_name=args.target)
     triager.run()

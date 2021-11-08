@@ -36,10 +36,10 @@ Usage Examples:
     return message
 
 
-def multiple_sources():
-    """Returns multiple sources exception."""
+def multiple_options(option):
+    """Returns multiple options message."""
     message = """
-There is more than one source defined...can't decide which one to use.
-Please specify a single source with {}
-""".format(crayons.red("--source NAME"))
+There is more than one {0} defined...can't decide which one to use.
+Please specify a single {0} with --{0} NAME
+""".format(option)
     return message

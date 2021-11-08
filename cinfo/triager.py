@@ -11,7 +11,10 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import crayons
+import importlib
 import logging
+import os
 import sys
 
 from cinfo.config import Config
@@ -22,9 +25,11 @@ LOG = logging.getLogger(__name__)
 
 class Triager(object):
 
-    def __init__(self, config_file, source=None):
+    def __init__(self, config_file, source_name=None, target_name=None):
         self.config_file = config_file
-        self.source=source
+        self.source_name = source_name
+        self.target_name = target_name
+        self.workspace = os.path.join(os.path.expanduser('~'), '.cinfo')
 
     def load_config(self):
         self.config = Config(file=self.config_file)
@@ -33,15 +38,57 @@ class Triager(object):
         self.targets = self.config.data['targets']
 
     def pull(self):
-        pass
+        LOG.info("{}: {}".format(
+            crayons.yellow("pulling information from the source"),
+            self.source_name))
+        try:
+            driver = getattr(importlib.import_module(
+                "cinfo.drivers.{}".format(self.source['type'])),
+                self.source['type'].capitalize())()
+        except KeyError:
+            LOG.error("{}: {}...exiting".format(
+                crayons.red("No such source"), self.source))
+            sys.exit(2)
+        self.data = driver.pull(self.source['url'],
+                                jobs=self.source['jobs'])
+        if not self.data:
+            LOG.warning("{}".format(crayons.red(
+                "I've pulled nothing! outrageous!")))
+        self.write(self.data)
 
     def publish(self):
+        LOG.info("{}: {}".format(
+            crayons.yellow("publishing data to target"),
+            self.target['url']))
+        try:
+            publisher = getattr(importlib.import_module(
+                "cinfo.drivers.{}".format(self.target['type'])),
+                self.target['type'].capitalize())()
+        except KeyError:
+            LOG.error("{}: {}...exiting".format(
+                crayons.red("No such target"), self.target))
+            sys.exit(2)
+
+        publisher.publish(self.data)
+
+    def write(self, data):
         pass
 
     def validate(self):
-        if len(self.sources.keys()) > 1 and not self.source:
-            LOG.error(usage_exc.multiple_sources())
+        if len(self.sources.keys()) > 1 and not self.source_name:
+            LOG.error(usage_exc.multiple_options("sources"))
             sys.exit(2)
+        elif not self.source_name:
+            self.source = list(self.sources.values())[0]
+        else:
+            self.source = self.sources[self.source_name]
+        if len(self.targets.keys()) > 1 and not self.target:
+            LOG.error(usage_exc.multiple_options("targets"))
+            sys.exit(2)
+        elif not self.target_name:
+            self.target = list(self.targets.values())[0]
+        else:
+            self.target = self.targets[self.target_name]
 
     def run(self):
         self.load_config()
