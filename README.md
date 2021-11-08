@@ -39,6 +39,19 @@ To run full triaging process of pulling and publishing the data: `cinfo triage`
 To only pull data: `cinfo pull`
 To only publish existing local data: `cinfo publish`
 
+## Supported Sources & Targets
+
+Sources:
+
+  * Jenkins
+  * (TODO) Report Portal
+  * (TODO) ELK
+
+Targets:
+
+  * Google Spreadsheet
+  * (TODO) Email
+
 ## Contributions
 
 Contributions are made by submitting pull requests
