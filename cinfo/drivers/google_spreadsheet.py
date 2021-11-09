@@ -23,6 +23,7 @@ LOG = logging.getLogger(__name__)
 scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
 cell_colors_by_status = {'SUCCESS': [0, 1, 0],
                          'UNSTABLE': [0.9, 0.9, 0.2],
+                         'ABORTED': [0.4, 0.4, 0.3],
                          'FAILURE': [1, 0, 0]}
 
 
@@ -39,11 +40,64 @@ class Google_spreadsheet(object):
         # Create worksheets
         try:
             sheet.add_worksheet(title="Per Job", rows="100", cols="20")
+        except gspread.exceptions.APIError:
+            LOG.debug("Worksheets already exist...skipping")
+        try:
             sheet.add_worksheet(title="Per Test", rows="100", cols="20")
+        except gspread.exceptions.APIError:
+            LOG.debug("Worksheets already exist...skipping")
+        try:
             sheet.add_worksheet(title="Per Status", rows="100", cols="20")
         except gspread.exceptions.APIError:
             LOG.debug("Worksheets already exist...skipping")
 
+   
+        cells_list = []
+        ws = sheet.worksheet("Per Status")
+        cells_list.append(Cell(1, 1, "This is generated automatically by CInfo. You can edit the spreadsheet and add additional data"))
+        i = 2
+        for build_status, builds in data['build_statuses'].items():
+            ws.format("A{0}:H{0}".format(i), {
+                 "backgroundColor": {
+                     "red": cell_colors_by_status[build_status][0],
+                     "green": cell_colors_by_status[build_status][1],
+                     "blue": cell_colors_by_status[build_status][2],
+                 }})
+            cells_list.append(Cell(i, 1, "{} Builds".format(build_status)))
+            i+=1
+            cells_list.append(Cell(i, 1, "Job Name"))
+            cells_list.append(Cell(i, 2, "Build Number"))
+            for build in builds:
+                i+=1
+                cells_list.append(Cell(i, 1, build['job']))
+                cells_list.append(Cell(i, 2, build['build_number']))
+            i+=1
+        ws.update_cells(cells_list)
+
+
+        cells_list = []
+        ws = sheet.worksheet("Per Test")
+        cells_list.append(Cell(1, 1, "This is generated automatically by CInfo. You can edit the spreadsheet and add additional data"))
+        i = 2
+        for test_name, test_data in data['tests'].items():
+            ws.format("A{0}:H{0}".format(i), {
+                 "backgroundColor": {
+                     "red": 1,
+                     "green": 0,
+                     "blue": 0,
+                 }})
+            cells_list.append(Cell(i, 1, "Test Name"))
+            cells_list.append(Cell(i, 2, test_name))
+            i+=1
+            cells_list.append(Cell(i, 1, "Jobs"))
+            i+=1
+            for job in test_data['jobs']:
+                cells_list.append(Cell(i, 1, job))
+                i+=1
+
+        ws.update_cells(cells_list)
+
+        cells_list = []
         ws = sheet.worksheet("Per Job")
         cells_list.append(Cell(1, 1, "This is generated automatically by CInfo. You can edit the spreadsheet and add additional data"))
         i = 2

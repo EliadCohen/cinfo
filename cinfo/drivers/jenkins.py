@@ -38,12 +38,14 @@ class Jenkins(object):
             result_json = json.loads(request.text)
             data['jobs'][job] = {'build_number': -1} 
             for build in result_json['allBuilds']:
-                if "GerritCause" in build['actions'][0]['causes'][0]['_class']:
+                if "causes" in build['actions'][0] and "GerritCause" in build['actions'][0]['causes'][0]['_class']:
                     pass
-                elif "BuildUpstreamCause" in build['actions'][0]['causes'][0]['_class']:
+                elif "causes" in build['actions'][0] and "BuildUpstreamCause" in build['actions'][0]['causes'][0]['_class']:
                     if build['number'] > data['jobs'][job]['build_number']:
                         build_data = {'build_number': build['number'], 'result': build['result'],
                                       'url': build['url'], 'job': job, 'tests': []}
+                else:
+                    pass
             if build_data['result'] == 'UNSTABLE':
                 tests_request = requests.get(url + CALLS['get_tests'].format(
                     job,build_data['build_number']), verify=False)
@@ -60,6 +62,12 @@ class Jenkins(object):
                                       'name': case['name'], 'status': case['status'],
                                       'duration': case['duration']}
                         build_data['tests'].append(tests_data)
+                        if case['status'] == "FAILED":
+                            if case['name'] not in data['tests']:
+                                data['tests'][case['name']] = {'jobs': [job], 'name': case['name']}
+                            else:
+                                data['tests'][case['name']]['jobs'].append(job)
+
             data['jobs'][job] = build_data
             data['build_statuses'][build_data['result']].append(build_data)
         return data
