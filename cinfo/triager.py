@@ -76,14 +76,19 @@ class Triager(object):
 
     def validate(self):
         if len(self.sources.keys()) > 1 and not self.source_name:
-            LOG.error(usage_exc.multiple_options("sources"))
+            LOG.error(usage_exc.multiple_options("source"))
             sys.exit(2)
         elif not self.source_name:
             self.source = list(self.sources.values())[0]
         else:
-            self.source = self.sources[self.source_name]
+            try:
+                self.source = self.sources[self.source_name]
+            except KeyError:
+                LOG.error(usage_exc.missing_value(
+                    self.source_name, [key for key in self.sources.keys()]))
+                sys.exit(2)
         if len(self.targets.keys()) > 1 and not self.target:
-            LOG.error(usage_exc.multiple_options("targets"))
+            LOG.error(usage_exc.multiple_options("target"))
             sys.exit(2)
         elif not self.target_name:
             self.target = list(self.targets.values())[0]

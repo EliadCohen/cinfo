@@ -40,6 +40,14 @@ def multiple_options(option):
     """Returns multiple options message."""
     message = """
 There is more than one {0} defined...can't decide which one to use.
-Please specify a single {0} with --{0} NAME
-""".format(option)
+Please specify a single {0} with {1}
+""".format(option, crayons.red("--" + option + " NAME"))
+    return message
+
+def missing_value(missing_value, possible_values):
+    """Returns multiple options message."""
+    message = """
+There is no such value: {0}
+Try one of the following: {1}
+""".format(crayons.red(missing_value), crayons.green(','.join(possible_values)))
     return message
